@@ -1,9 +1,15 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
+import LanguageSwitcher from '@/components/language-switcher';
+import { useTranslations } from '@/hooks/use-translations';
 
 export default function Home() {
+    const { translations } = useTranslations();
+    const text = translations.home as Record<string, string>;
+    const common = translations.common as Record<string, string>;
+
     return (
         <>
-            <Head title="Accueil" />
+            <Head title={text.page_title} />
 
             <div className="relative min-h-screen overflow-hidden bg-background text-text-primary">
                 <div
@@ -16,7 +22,7 @@ export default function Home() {
                 />
 
                 <header className="relative z-10 mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-6 lg:px-10">
-                    <a href="/" aria-label="Clutch — Accueil">
+                    <a href="/" aria-label={common.home_label}>
                         <img
                             src="/images/brand/logo-dark.svg"
                             alt="Clutch."
@@ -24,37 +30,43 @@ export default function Home() {
                         />
                     </a>
 
-                    <span className="rounded-full border border-border bg-surface/80 px-3 py-1.5 text-xs font-medium tracking-wide text-text-secondary uppercase backdrop-blur">
-                        Bêta privée
-                    </span>
+                    <nav className="flex items-center gap-2 text-sm">
+                        <Link href="/login" className="rounded-lg px-3 py-2 text-text-secondary transition hover:text-text-primary">
+                            {text.login}
+                        </Link>
+                        <Link href="/register" className="rounded-lg border border-border bg-surface-elevated px-3 py-2 font-medium transition hover:border-ct-dark">
+                            {text.register}
+                        </Link>
+                        <LanguageSwitcher />
+                    </nav>
                 </header>
 
                 <main className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-16 px-6 py-12 lg:min-h-[calc(100vh-168px)] lg:grid-cols-[0.88fr_1.12fr] lg:px-10 lg:py-16">
                     <section className="flex max-w-2xl flex-col items-start gap-8">
                         <div className="flex items-center gap-3 text-sm font-medium text-text-secondary">
                             <span className="size-2 rounded-full bg-accent shadow-[0_0_18px_rgba(207,80,21,0.9)]" />
-                            Analyse de démos Counter-Strike 2
+                            {text.eyebrow}
                         </div>
 
                         <div className="flex flex-col gap-5">
                             <h1 className="text-5xl leading-[0.98] font-semibold tracking-[-0.045em] text-balance sm:text-6xl lg:text-7xl">
-                                Revoyez le round.
-                                <span className="block text-text-secondary">Comprenez la décision.</span>
+                                {text.headline_primary}
+                                <span className="block text-text-secondary">{text.headline_secondary}</span>
                             </h1>
                             <p className="max-w-xl text-base leading-7 text-text-secondary sm:text-lg sm:leading-8">
-                                Un lecteur radar 2D, des statistiques précises et des conseils reliés aux moments qui ont vraiment changé votre partie.
+                                {text.description}
                             </p>
                         </div>
 
                         <div className="flex flex-wrap gap-3">
                             <span className="rounded-full border border-ct-dark bg-ct-dark/30 px-4 py-2 text-sm text-ct">
-                                Radar 2D
+                                {text.feature_radar}
                             </span>
                             <span className="rounded-full border border-t-dark bg-t-dark/20 px-4 py-2 text-sm text-t">
-                                Statistiques par round
+                                {text.feature_stats}
                             </span>
                             <span className="rounded-full border border-border bg-surface-elevated px-4 py-2 text-sm text-text-secondary">
-                                Coaching explicable
+                                {text.feature_coaching}
                             </span>
                         </div>
 
@@ -62,7 +74,7 @@ export default function Home() {
                             href="#preview"
                             className="inline-flex items-center gap-3 rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#e05a17] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
                         >
-                            Découvrir Clutch.
+                            {text.cta}
                             <span aria-hidden="true">→</span>
                         </a>
                     </section>
@@ -82,8 +94,8 @@ export default function Home() {
                                     />
                                 </span>
                                 <div>
-                                    <p className="text-sm font-medium">Match analysis</p>
-                                    <p className="text-xs text-text-secondary">de_mirage · Round 18</p>
+                                    <p className="text-sm font-medium">{text.analysis}</p>
+                                    <p className="text-xs text-text-secondary">de_mirage · {text.round}</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-2 text-xs font-semibold">
@@ -110,17 +122,17 @@ export default function Home() {
 
                             <div className="flex flex-col gap-3">
                                 <article className="rounded-xl border border-border bg-surface-elevated p-4">
-                                    <p className="text-xs text-text-secondary">Impact du round</p>
+                                    <p className="text-xs text-text-secondary">{text.round_impact}</p>
                                     <p className="mt-2 text-2xl font-semibold">+24%</p>
-                                    <p className="mt-1 text-xs text-ct">Trade réussi</p>
+                                    <p className="mt-1 text-xs text-ct">{text.trade_success}</p>
                                 </article>
                                 <article className="flex-1 rounded-xl border border-border bg-surface-elevated p-4">
-                                    <p className="text-xs text-text-secondary">À revoir</p>
+                                    <p className="text-xs text-text-secondary">{text.review}</p>
                                     <p className="mt-2 text-sm leading-6">
-                                        Votre rotation commence 2,4 s après le premier contact.
+                                        {text.rotation_feedback}
                                     </p>
                                     <span className="mt-3 inline-block text-xs font-medium text-accent">
-                                        Voir à 00:42 →
+                                        {text.view_timestamp} →
                                     </span>
                                 </article>
                             </div>
@@ -129,8 +141,8 @@ export default function Home() {
                 </main>
 
                 <footer className="relative z-10 mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-6 text-xs text-text-secondary lg:px-10">
-                    <p>Clutch. — Play. Review. Improve.</p>
-                    <p>Laravel · Inertia · React</p>
+                    <p>Clutch. — {text.tagline}</p>
+                    <p>{text.stack}</p>
                 </footer>
             </div>
         </>
