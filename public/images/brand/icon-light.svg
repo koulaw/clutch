@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="Clutch icon">
+  <title>Clutch icon</title>
+  <path d="M184 69C168 52 147 43 122 43C74 43 39 78 39 128C39 178 74 213 122 213C147 213 168 204 184 187L157 160C148 170 136 176 122 176C95 176 77 156 77 128C77 100 95 80 122 80C136 80 148 86 157 96L184 69Z" fill="#111113"/>
+  <circle cx="191" cy="128" r="18" fill="#F97316"/>
+</svg>
