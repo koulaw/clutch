@@ -10,6 +10,14 @@ Le dépôt contient actuellement le socle Laravel de l'application. Les fonction
 
 La première bêta sera gratuite, accessible sur invitation et limitée par des quotas afin de contrôler les coûts de traitement et de stockage.
 
+## Suivi du développement
+
+- [Projet GitHub — Clutch. MVP](https://github.com/users/koulaw/projects/8)
+- [Issues du repository](https://github.com/koulaw/clutch/issues)
+- [Milestones](https://github.com/koulaw/clutch/milestones)
+
+Le projet GitHub regroupe les 38 issues du MVP, organisées par priorité, domaine et étape de livraison. Chaque issue contient ses critères d'acceptation et ses dépendances.
+
 ## Objectifs du MVP
 
 - Importer manuellement une démo CS2, puis automatiser l'import des matchs FACEIT.
