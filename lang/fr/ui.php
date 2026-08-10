@@ -92,5 +92,7 @@ return [
         'verified' => 'Compte vérifié',
         'welcome' => 'Bienvenue, :name.',
         'description' => 'Votre espace est sécurisé. L’import et l’analyse de vos premières démos arriveront dans les prochaines étapes.',
+        'empty_title' => 'Aucune analyse pour le moment',
+        'empty_description' => 'Vos prochains matchs analysés apparaîtront ici.',
     ],
 ];

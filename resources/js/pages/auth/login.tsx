@@ -1,5 +1,6 @@
 import AuthLayout from '@/components/auth-layout';
 import FormField from '@/components/form-field';
+import Button from '@/components/ui/button';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 import { useTranslations } from '@/hooks/use-translations';
@@ -26,7 +27,7 @@ export default function Login() {
                     <label className="flex items-center gap-2 text-text-secondary"><input type="checkbox" checked={form.data.remember} onChange={(event) => form.setData('remember', event.target.checked)} className="size-4 accent-ct" />{text.remember}</label>
                     <Link href="/forgot-password" className="text-ct hover:underline">{text.forgot}</Link>
                 </div>
-                <button type="submit" disabled={form.processing} className="rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#e05a17] disabled:cursor-not-allowed disabled:opacity-60">{form.processing ? text.submitting : text.submit}</button>
+                <Button type="submit" loading={form.processing}>{form.processing ? text.submitting : text.submit}</Button>
             </form>
         </AuthLayout>
     );

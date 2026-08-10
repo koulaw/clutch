@@ -1,5 +1,9 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import LanguageSwitcher from '@/components/language-switcher';
+import Badge from '@/components/ui/badge';
+import { buttonClassName } from '@/components/ui/button';
+import Card from '@/components/ui/card';
+import Navigation from '@/components/ui/navigation';
 import { useTranslations } from '@/hooks/use-translations';
 
 export default function Home() {
@@ -21,25 +25,16 @@ export default function Home() {
                     aria-hidden="true"
                 />
 
-                <header className="relative z-10 mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-6 lg:px-10">
-                    <a href="/" aria-label={common.home_label}>
-                        <img
-                            src="/images/brand/logo-dark.svg"
-                            alt="Clutch."
-                            className="h-10 w-auto sm:h-12"
-                        />
-                    </a>
-
-                    <nav className="flex items-center gap-2 text-sm">
-                        <Link href="/login" className="rounded-lg px-3 py-2 text-text-secondary transition hover:text-text-primary">
-                            {text.login}
-                        </Link>
-                        <Link href="/register" className="rounded-lg border border-border bg-surface-elevated px-3 py-2 font-medium transition hover:border-ct-dark">
-                            {text.register}
-                        </Link>
-                        <LanguageSwitcher />
-                    </nav>
-                </header>
+                <div className="relative z-10 mx-auto w-full max-w-7xl px-6 lg:px-10">
+                    <Navigation
+                        homeLabel={common.home_label}
+                        actions={[
+                            { href: '/login', label: text.login },
+                            { href: '/register', label: text.register, variant: 'secondary' },
+                        ]}
+                        trailing={<LanguageSwitcher />}
+                    />
+                </div>
 
                 <main className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-16 px-6 py-12 lg:min-h-[calc(100vh-168px)] lg:grid-cols-[0.88fr_1.12fr] lg:px-10 lg:py-16">
                     <section className="flex max-w-2xl flex-col items-start gap-8">
@@ -59,20 +54,14 @@ export default function Home() {
                         </div>
 
                         <div className="flex flex-wrap gap-3">
-                            <span className="rounded-full border border-ct-dark bg-ct-dark/30 px-4 py-2 text-sm text-ct">
-                                {text.feature_radar}
-                            </span>
-                            <span className="rounded-full border border-t-dark bg-t-dark/20 px-4 py-2 text-sm text-t">
-                                {text.feature_stats}
-                            </span>
-                            <span className="rounded-full border border-border bg-surface-elevated px-4 py-2 text-sm text-text-secondary">
-                                {text.feature_coaching}
-                            </span>
+                            <Badge tone="ct">{text.feature_radar}</Badge>
+                            <Badge tone="t">{text.feature_stats}</Badge>
+                            <Badge>{text.feature_coaching}</Badge>
                         </div>
 
                         <a
                             href="#preview"
-                            className="inline-flex items-center gap-3 rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#e05a17] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
+                            className={buttonClassName('primary', 'lg')}
                         >
                             {text.cta}
                             <span aria-hidden="true">→</span>
@@ -121,12 +110,12 @@ export default function Home() {
                             </div>
 
                             <div className="flex flex-col gap-3">
-                                <article className="rounded-xl border border-border bg-surface-elevated p-4">
+                                <Card className="rounded-xl bg-surface-elevated p-4">
                                     <p className="text-xs text-text-secondary">{text.round_impact}</p>
                                     <p className="mt-2 text-2xl font-semibold">+24%</p>
                                     <p className="mt-1 text-xs text-ct">{text.trade_success}</p>
-                                </article>
-                                <article className="flex-1 rounded-xl border border-border bg-surface-elevated p-4">
+                                </Card>
+                                <Card className="flex-1 rounded-xl bg-surface-elevated p-4">
                                     <p className="text-xs text-text-secondary">{text.review}</p>
                                     <p className="mt-2 text-sm leading-6">
                                         {text.rotation_feedback}
@@ -134,7 +123,7 @@ export default function Home() {
                                     <span className="mt-3 inline-block text-xs font-medium text-accent">
                                         {text.view_timestamp} →
                                     </span>
-                                </article>
+                                </Card>
                             </div>
                         </div>
                     </section>

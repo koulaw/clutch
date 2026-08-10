@@ -10,6 +10,72 @@ Le dépôt contient actuellement le socle Laravel de l'application. Les fonction
 
 La première bêta sera gratuite, accessible sur invitation et limitée par des quotas afin de contrôler les coûts de traitement et de stockage.
 
+## Lancer le projet en local
+
+### Prérequis
+
+- PHP 8.3 avec l'extension PostgreSQL (`pdo_pgsql`) ;
+- Composer ;
+- Node.js et pnpm 10 ;
+- Docker avec Docker Compose.
+
+Docker exécute PostgreSQL, Redis et MinIO. Laravel, le worker de queue et Vite s'exécutent directement sur la machine de développement.
+
+### Première installation
+
+```bash
+git clone https://github.com/koulaw/clutch.git
+cd clutch
+cp .env.example .env
+
+docker compose up -d --wait postgres redis minio
+docker compose run --rm minio-init
+
+composer run setup
+composer run dev
+```
+
+L'application est ensuite accessible sur [http://localhost:8000](http://localhost:8000). `composer run dev` démarre le serveur Laravel, le worker Redis, les logs applicatifs et Vite dans le même terminal.
+
+Les services locaux utilisent les adresses suivantes :
+
+| Service | Adresse | Accès local |
+| --- | --- | --- |
+| PostgreSQL | `127.0.0.1:5432` | base, utilisateur et mot de passe : `clutch` |
+| Redis | `127.0.0.1:6379` | sans mot de passe |
+| API S3 MinIO | `http://127.0.0.1:9002` | bucket `clutch` |
+| Console MinIO | [http://127.0.0.1:9003](http://127.0.0.1:9003) | `clutch` / `clutch-secret` |
+
+Les identifiants ci-dessus sont réservés au développement local. Les secrets de production doivent être injectés par la plateforme et ne doivent jamais être commités.
+
+### Démarrage quotidien
+
+```bash
+docker compose up -d postgres redis minio
+composer run dev
+```
+
+Arrêter `composer run dev` avec `Ctrl+C`, puis arrêter les services sans perdre leurs données :
+
+```bash
+docker compose stop
+```
+
+Pour supprimer les conteneurs **et toutes les données locales persistantes** :
+
+```bash
+docker compose down --volumes
+```
+
+### Vérifications utiles
+
+```bash
+composer test
+pnpm run types:check
+pnpm run build
+docker compose ps
+```
+
 ## Suivi du développement
 
 - [Projet GitHub — Clutch. MVP](https://github.com/users/koulaw/projects/8)

@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import type { PropsWithChildren, ReactNode } from 'react';
 import LanguageSwitcher from '@/components/language-switcher';
+import Card from '@/components/ui/card';
 import { useTranslations } from '@/hooks/use-translations';
 
 type AuthLayoutProps = PropsWithChildren<{
@@ -26,7 +27,7 @@ export default function AuthLayout({ children, title, description, footer }: Aut
                     <LanguageSwitcher />
                 </div>
 
-                <div className="rounded-2xl border border-border bg-surface/95 p-6 shadow-2xl shadow-black/30 backdrop-blur sm:p-8">
+                <Card elevated className="bg-surface/95 p-6 backdrop-blur sm:p-8">
                     <div className="flex flex-col gap-2">
                         <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
                         <p className="text-sm leading-6 text-text-secondary">{description}</p>
@@ -35,7 +36,7 @@ export default function AuthLayout({ children, title, description, footer }: Aut
                     <div className="mt-8">{children}</div>
 
                     {footer && <div className="mt-6 border-t border-border pt-6 text-center text-sm text-text-secondary">{footer}</div>}
-                </div>
+                </Card>
             </section>
         </main>
     );

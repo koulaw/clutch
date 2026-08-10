@@ -1,0 +1,62 @@
+name: clutch
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: clutch
+      POSTGRES_USER: clutch
+      POSTGRES_PASSWORD: clutch
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - clutch-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U clutch -d clutch"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:8-alpine
+    command: redis-server --appendonly yes
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - clutch-redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: clutch
+      MINIO_ROOT_PASSWORD: clutch-secret
+    ports:
+      - "127.0.0.1:9002:9000"
+      - "127.0.0.1:9003:9001"
+    volumes:
+      - clutch-minio:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "mc alias set local http://minio:9000 clutch clutch-secret &&
+      mc mb --ignore-existing local/clutch"
+
+volumes:
+  clutch-postgres:
+  clutch-redis:
+  clutch-minio:

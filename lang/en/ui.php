@@ -92,5 +92,7 @@ return [
         'verified' => 'Verified account',
         'welcome' => 'Welcome, :name.',
         'description' => 'Your space is secure. Importing and analysing your first demos will arrive in the next steps.',
+        'empty_title' => 'No analysis yet',
+        'empty_description' => 'Your next analysed matches will appear here.',
     ],
 ];
