@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'invitation' => 'This invitation is invalid or is no longer available.',
     'boolean' => 'The :attribute field must be true or false.',
     'confirmed' => 'The :attribute field confirmation does not match.',
     'email' => 'The :attribute field must be a valid email address.',

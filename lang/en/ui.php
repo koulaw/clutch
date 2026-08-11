@@ -52,6 +52,7 @@ return [
             'email' => 'Email address',
             'password' => 'Password',
             'password_confirmation' => 'Confirm password',
+            'invitation' => 'Invitation code',
             'submit' => 'Create my account',
             'submitting' => 'Creating…',
             'has_account' => 'Already registered?',

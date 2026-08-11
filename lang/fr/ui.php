@@ -52,6 +52,7 @@ return [
             'email' => 'Adresse email',
             'password' => 'Mot de passe',
             'password_confirmation' => 'Confirmer le mot de passe',
+            'invitation' => 'Code d’invitation',
             'submit' => 'Créer mon compte',
             'submitting' => 'Création…',
             'has_account' => 'Déjà inscrit ?',

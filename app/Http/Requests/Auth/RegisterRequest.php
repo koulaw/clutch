@@ -9,6 +9,14 @@ use Illuminate\Validation\Rules\Password;
 
 class RegisterRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'email' => $this->string('email')->trim()->lower()->toString(),
+            'invitation' => $this->string('invitation')->trim()->toString(),
+        ]);
+    }
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -28,6 +36,7 @@ class RegisterRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique('users')],
             'password' => ['required', 'confirmed', Password::defaults()],
+            'invitation' => ['required', 'string'],
         ];
     }
 }
