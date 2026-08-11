@@ -4,8 +4,9 @@ import hashlib
 from pathlib import Path
 
 import pytest
+import zstandard
 
-from clutch_worker.errors import ChecksumMismatchError, StorageError
+from clutch_worker.errors import ChecksumMismatchError, CorruptDemoError, StorageError
 from clutch_worker.storage import S3DemoStorage
 from clutch_worker.workflow import ParseDemoWorkflow
 
@@ -24,9 +25,11 @@ class RecordingParser:
     def __init__(self, result: object) -> None:
         self.result = result
         self.path: Path | None = None
+        self.content: bytes | None = None
 
     def parse(self, path: Path) -> object:
         self.path = path
+        self.content = path.read_bytes()
         return self.result
 
 
@@ -50,6 +53,34 @@ def test_downloads_checksums_and_parses_from_object_storage(tmp_path: Path) -> N
     assert manifest == {"parsed": "parsed-demo", "output": str(tmp_path)}
     assert parser.path is not None
     assert not parser.path.exists()
+
+
+def test_decompresses_zstandard_demo_before_parsing(tmp_path: Path) -> None:
+    raw_demo = b"PBDEMS2\x00reference"
+    compressed_demo = zstandard.ZstdCompressor().compress(raw_demo)
+    parser = RecordingParser(result="parsed-demo")
+
+    class CompressedStorage:
+        def download(self, bucket: str, key: str, destination: Path) -> None:
+            destination.write_bytes(compressed_demo)
+
+    workflow = ParseDemoWorkflow(CompressedStorage(), parser, RecordingWriter())
+
+    workflow.run("clutch", "demos/reference.dem.zst", tmp_path)
+
+    assert parser.path is not None
+    assert parser.content == raw_demo
+
+
+def test_normalizes_invalid_zstandard_data(tmp_path: Path) -> None:
+    class InvalidCompressedStorage:
+        def download(self, bucket: str, key: str, destination: Path) -> None:
+            destination.write_bytes(b"not-zstandard")
+
+    workflow = ParseDemoWorkflow(InvalidCompressedStorage(), RecordingParser("unused"), RecordingWriter())
+
+    with pytest.raises(CorruptDemoError):
+        workflow.run("clutch", "demos/invalid.dem.zst", tmp_path)
 
 
 def test_rejects_a_download_with_the_wrong_checksum(tmp_path: Path) -> None:

@@ -5,7 +5,9 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any
 
-from clutch_worker.errors import ChecksumMismatchError
+import zstandard
+
+from clutch_worker.errors import ChecksumMismatchError, CorruptDemoError
 from clutch_worker.parser import AwpyDemoParser
 from clutch_worker.storage import DemoStorage
 from clutch_worker.writer import ParsedDemoWriter
@@ -33,14 +35,30 @@ class ParseDemoWorkflow:
     ) -> dict[str, Any]:
         """Run the complete parsing workflow for one storage object."""
         with TemporaryDirectory(prefix="clutch-demo-") as temporary_directory:
-            demo_path = Path(temporary_directory) / "input.dem"
-            self._storage.download(bucket, key, demo_path)
+            downloaded_path = Path(temporary_directory) / "input"
+            self._storage.download(bucket, key, downloaded_path)
 
-            if expected_sha256 and self._sha256(demo_path) != expected_sha256.lower():
+            if expected_sha256 and self._sha256(downloaded_path) != expected_sha256.lower():
                 raise ChecksumMismatchError
 
+            demo_path = self._prepare_demo(downloaded_path, key)
             parsed = self._parser.parse(demo_path)
             return self._writer.write(parsed, output_directory)
+
+    @staticmethod
+    def _prepare_demo(downloaded_path: Path, key: str) -> Path:
+        if not key.lower().endswith(".zst"):
+            return downloaded_path
+
+        demo_path = downloaded_path.with_suffix(".dem")
+
+        try:
+            with downloaded_path.open("rb") as compressed_file, demo_path.open("wb") as demo_file:
+                zstandard.ZstdDecompressor().copy_stream(compressed_file, demo_file)
+        except (OSError, zstandard.ZstdError) as exception:
+            raise CorruptDemoError(exception) from exception
+
+        return demo_path
 
     @staticmethod
     def _sha256(path: Path) -> str:

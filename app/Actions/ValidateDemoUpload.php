@@ -4,11 +4,14 @@ namespace App\Actions;
 
 use App\Models\Demo;
 use Illuminate\Filesystem\FilesystemManager;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class ValidateDemoUpload
 {
     private const Header = "PBDEMS2\0";
+
+    private const ZstandardHeader = "\x28\xB5\x2F\xFD";
 
     public function __construct(private FilesystemManager $filesystems) {}
 
@@ -38,7 +41,11 @@ class ValidateDemoUpload
             fclose($stream);
         }
 
-        if ($header !== self::Header) {
+        $isSupported = Str::endsWith($demo->storage_path, '.zst')
+            ? str_starts_with($header, self::ZstandardHeader)
+            : $header === self::Header;
+
+        if (! $isSupported) {
             $disk->delete($demo->storage_path);
 
             throw ValidationException::withMessages([

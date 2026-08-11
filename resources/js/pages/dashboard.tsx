@@ -1,4 +1,5 @@
-import { Head, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
+import DemoUploadForm from '@/components/demo-upload-form';
 import LanguageSwitcher from '@/components/language-switcher';
 import Badge from '@/components/ui/badge';
 import Card from '@/components/ui/card';
@@ -34,6 +35,12 @@ export default function Dashboard() {
                         <h1 className="mt-3 text-4xl font-semibold tracking-tight">{interpolate(text.welcome, { name: auth.user.name })}</h1>
                         <p className="mt-4 max-w-xl leading-7 text-text-secondary">{text.description}</p>
                     </div>
+                    <DemoUploadForm
+                        importsRemaining={Math.max(0, quotas.imports.limit - quotas.imports.used)}
+                        analysesRemaining={Math.max(0, quotas.analyses.limit - quotas.analyses.used)}
+                        text={translations.demo_upload as Record<string, string>}
+                        onUploaded={() => router.reload({ only: ['quotas'] })}
+                    />
                     <div className="grid max-w-2xl gap-4 sm:grid-cols-2" aria-label={text.quota_title}>
                         <QuotaCard
                             label={text.import_quota}

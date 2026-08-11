@@ -15,6 +15,7 @@ class DemoUploadController extends Controller
     {
         $reservation = $uploads->handle(
             $request->user(),
+            $request->string('filename')->toString(),
             $request->integer('size_bytes'),
             $request->string('checksum_sha256')->toString(),
         );

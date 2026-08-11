@@ -18,7 +18,7 @@ class CreateDemoUploadRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'filename' => ['required', 'string', 'max:255', 'regex:/\.dem\z/i'],
+            'filename' => ['required', 'string', 'max:255', 'regex:/\.(?:dem|zst)\z/i'],
             'size_bytes' => ['required', 'integer', 'min:1', 'max:'.config('demo_upload.max_size_bytes')],
             'checksum_sha256' => ['required', 'string', 'regex:/\A[a-f0-9]{64}\z/i'],
         ];
