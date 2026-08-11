@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\AnalysisStatus;
+use App\Events\AnalysisProgressUpdated;
 use Database\Factories\AnalysisFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -22,6 +23,16 @@ class Analysis extends Model
         'attempt' => 1,
         'status' => AnalysisStatus::Queued->value,
     ];
+
+    protected static function booted(): void
+    {
+        static::created(fn (Analysis $analysis) => AnalysisProgressUpdated::dispatch($analysis));
+        static::updated(function (Analysis $analysis): void {
+            if ($analysis->wasChanged(['status', 'error_code', 'error_message'])) {
+                AnalysisProgressUpdated::dispatch($analysis);
+            }
+        });
+    }
 
     /** @return BelongsTo<Demo, $this> */
     public function demo(): BelongsTo

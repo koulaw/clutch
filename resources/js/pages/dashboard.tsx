@@ -1,10 +1,11 @@
 import { Head, router, usePage } from '@inertiajs/react';
+import { useState } from 'react';
+import AnalysisProgressList from '@/components/analysis-progress-list';
 import DemoUploadForm from '@/components/demo-upload-form';
 import LanguageSwitcher from '@/components/language-switcher';
 import Badge from '@/components/ui/badge';
 import Card from '@/components/ui/card';
 import Navigation from '@/components/ui/navigation';
-import { StatusState } from '@/components/ui/status-state';
 import { interpolate, useTranslations } from '@/hooks/use-translations';
 
 type DashboardProps = {
@@ -20,6 +21,7 @@ export default function Dashboard() {
     const { translations } = useTranslations();
     const text = translations.dashboard as Record<string, string>;
     const common = translations.common as Record<string, string>;
+    const [analysisRefreshToken, setAnalysisRefreshToken] = useState(0);
 
     return (
         <main className="min-h-screen bg-background px-6 py-8 text-text-primary">
@@ -39,7 +41,10 @@ export default function Dashboard() {
                         importsRemaining={Math.max(0, quotas.imports.limit - quotas.imports.used)}
                         analysesRemaining={Math.max(0, quotas.analyses.limit - quotas.analyses.used)}
                         text={translations.demo_upload as Record<string, string>}
-                        onUploaded={() => router.reload({ only: ['quotas'] })}
+                        onUploaded={() => {
+                            router.reload({ only: ['quotas'] });
+                            setAnalysisRefreshToken((token) => token + 1);
+                        }}
                     />
                     <div className="grid max-w-2xl gap-4 sm:grid-cols-2" aria-label={text.quota_title}>
                         <QuotaCard
@@ -55,7 +60,7 @@ export default function Dashboard() {
                             remainingLabel={text.remaining_total}
                         />
                     </div>
-                    <StatusState title={text.empty_title} description={text.empty_description} className="max-w-2xl" />
+                    <AnalysisProgressList refreshToken={analysisRefreshToken} text={translations.analysis_progress as Record<string, string>} />
                 </section>
             </div>
             <Head title={text.page_title} />

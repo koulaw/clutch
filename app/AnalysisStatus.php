@@ -12,6 +12,22 @@ enum AnalysisStatus: string
     case Failed = 'failed';
     case Unsupported = 'unsupported';
 
+    public function progress(): int
+    {
+        return match ($this) {
+            self::Uploaded => 0,
+            self::Queued => 10,
+            self::Parsing => 35,
+            self::Analyzing => 75,
+            self::Ready, self::Failed, self::Unsupported => 100,
+        };
+    }
+
+    public function isTerminal(): bool
+    {
+        return in_array($this, [self::Ready, self::Failed, self::Unsupported], true);
+    }
+
     public function canTransitionTo(self $status): bool
     {
         return match ($this) {

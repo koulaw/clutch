@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['map_name', 'version', 'network_protocols', 'image_path', 'image_width', 'image_height', 'checksum_sha256', 'coordinate_transform'])]
+#[Fillable(['map_name', 'version', 'patch_versions', 'image_path', 'image_width', 'image_height', 'checksum_sha256', 'coordinate_transform', 'image_layers'])]
 class MapRadar extends Model
 {
     /** @use HasFactory<MapRadarFactory> */
@@ -31,14 +31,28 @@ class MapRadar extends Model
         ];
     }
 
+    public function imagePathForAltitude(float $altitude): string
+    {
+        $layers = $this->image_layers ?? [];
+
+        foreach (array_reverse($layers) as $layer) {
+            if ($altitude >= $layer['altitude_min'] && $altitude <= $layer['altitude_max']) {
+                return $layer['image_path'];
+            }
+        }
+
+        return $this->image_path;
+    }
+
     /** @return array<string, string> */
     protected function casts(): array
     {
         return [
-            'network_protocols' => 'array',
+            'patch_versions' => 'array',
             'image_width' => 'integer',
             'image_height' => 'integer',
             'coordinate_transform' => 'array',
+            'image_layers' => 'array',
         ];
     }
 }

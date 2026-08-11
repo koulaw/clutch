@@ -22,12 +22,14 @@ class QueueDemoAnalysis
 
             $latestAnalysis = $lockedDemo->analyses()->latest('attempt')->first();
 
-            if ($latestAnalysis !== null && $latestAnalysis->status !== AnalysisStatus::Failed) {
+            $retryableStatuses = [AnalysisStatus::Failed, AnalysisStatus::Unsupported];
+
+            if ($latestAnalysis !== null && ! in_array($latestAnalysis->status, $retryableStatuses, true)) {
                 return $latestAnalysis;
             }
 
-            if ($manualRetry && $latestAnalysis?->status !== AnalysisStatus::Failed) {
-                throw new DomainException('Only a failed analysis may be retried.');
+            if ($manualRetry && ! in_array($latestAnalysis?->status, $retryableStatuses, true)) {
+                throw new DomainException('Only a failed or unsupported analysis may be retried.');
             }
 
             $analysis = $lockedDemo->analyses()->create([

@@ -13,21 +13,18 @@ class ResolveMapRadar
     public function handle(array $demoHeader): MapRadar
     {
         $mapName = $demoHeader['map_name'] ?? null;
-        $networkProtocol = filter_var($demoHeader['network_protocol'] ?? null, FILTER_VALIDATE_INT);
+        $patchVersion = filter_var($demoHeader['patch_version'] ?? null, FILTER_VALIDATE_INT);
         $versions = is_string($mapName) ? $this->config->get("map_radars.maps.{$mapName}", []) : [];
 
         foreach ($versions as $version => $definition) {
-            if ($networkProtocol === false || ! in_array($networkProtocol, $definition['network_protocols'], true)) {
+            if ($patchVersion === false || ! in_array($patchVersion, $definition['patch_versions'], true)) {
                 continue;
             }
 
-            $imagePath = resource_path($definition['image_path']);
-            $dimensions = is_file($imagePath) ? getimagesize($imagePath) : false;
+            $layers = $definition['layers'] ?? [];
+            $defaultLayer = $layers['default'] ?? null;
 
-            if ($dimensions === false
-                || $dimensions[0] !== $definition['width']
-                || $dimensions[1] !== $definition['height']
-                || hash_file('sha256', $imagePath) !== $definition['checksum_sha256']) {
+            if (! is_array($defaultLayer) || $layers === [] || ! $this->validLayers($layers)) {
                 throw DemoParserException::fromWorker('unsupported_demo', 'The configured map radar asset is invalid.', [
                     'retryable' => false,
                     'details' => ['map_name' => $mapName, 'radar_version' => (string) $version],
@@ -37,19 +34,38 @@ class ResolveMapRadar
             return MapRadar::query()->updateOrCreate(
                 ['map_name' => $mapName, 'version' => (string) $version],
                 [
-                    'network_protocols' => $definition['network_protocols'],
-                    'image_path' => $definition['image_path'],
-                    'image_width' => $definition['width'],
-                    'image_height' => $definition['height'],
-                    'checksum_sha256' => $definition['checksum_sha256'],
+                    'patch_versions' => $definition['patch_versions'],
+                    'image_path' => $defaultLayer['image_path'],
+                    'image_width' => $defaultLayer['width'],
+                    'image_height' => $defaultLayer['height'],
+                    'checksum_sha256' => $defaultLayer['checksum_sha256'],
                     'coordinate_transform' => $definition['transform'],
+                    'image_layers' => $layers,
                 ],
             );
         }
 
         throw DemoParserException::fromWorker('unsupported_demo', 'The demo map or game version is not supported.', [
             'retryable' => false,
-            'details' => ['map_name' => $mapName, 'network_protocol' => $networkProtocol],
+            'details' => ['map_name' => $mapName, 'patch_version' => $patchVersion],
         ]);
+    }
+
+    /** @param array<string, array<string, mixed>> $layers */
+    private function validLayers(array $layers): bool
+    {
+        foreach ($layers as $layer) {
+            $imagePath = isset($layer['image_path']) ? resource_path($layer['image_path']) : null;
+            $dimensions = is_string($imagePath) && is_file($imagePath) ? getimagesize($imagePath) : false;
+
+            if ($dimensions === false
+                || $dimensions[0] !== ($layer['width'] ?? null)
+                || $dimensions[1] !== ($layer['height'] ?? null)
+                || hash_file('sha256', $imagePath) !== ($layer['checksum_sha256'] ?? null)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

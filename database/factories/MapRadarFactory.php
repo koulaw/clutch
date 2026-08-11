@@ -19,18 +19,27 @@ class MapRadarFactory extends Factory
     {
         return [
             'map_name' => 'de_mirage',
-            'version' => '17595823',
-            'network_protocols' => [14011],
-            'image_path' => 'maps/de_mirage/17595823/radar.png',
+            'version' => '84adbb9dca5a',
+            'patch_versions' => [14174],
+            'image_path' => 'maps/de_mirage/84adbb9dca5a/radar.png',
             'image_width' => 1024,
             'image_height' => 1024,
-            'checksum_sha256' => 'af139a92cf929214f7c0ac35e2d8c82bad385d83e71eeaf7b955dac96467a136',
+            'checksum_sha256' => '5de1cc16362e538dc5f4561a24661cb1fb1c15c77ec289e32b44c0fc07bfb85b',
             'coordinate_transform' => [
                 'pos_x' => -3230.0,
                 'pos_y' => 1713.0,
                 'scale' => 5.0,
                 'rotate' => 0,
-                'lower_level_max_units' => -1000000.0,
+            ],
+            'image_layers' => [
+                'default' => [
+                    'image_path' => 'maps/de_mirage/84adbb9dca5a/radar.png',
+                    'width' => 1024,
+                    'height' => 1024,
+                    'checksum_sha256' => '5de1cc16362e538dc5f4561a24661cb1fb1c15c77ec289e32b44c0fc07bfb85b',
+                    'altitude_min' => -1000000.0,
+                    'altitude_max' => 1000000.0,
+                ],
             ],
         ];
     }

@@ -93,7 +93,7 @@ it('marks an unsupported map version without retrying it as a parser failure', f
     $parser = $this->mock(RunDemoParser::class, function (MockInterface $mock): void {
         $exception = DemoParserException::fromWorker('unsupported_demo', 'The demo map or game version is not supported.', [
             'retryable' => false,
-            'details' => ['map_name' => 'de_inferno', 'network_protocol' => 14011],
+            'details' => ['map_name' => 'de_cbble', 'patch_version' => 14174],
         ]);
         $mock->shouldReceive('handle')->once()->andThrow($exception);
     });
@@ -106,11 +106,11 @@ it('marks an unsupported map version without retrying it as a parser failure', f
         ->and($analysis->demo->refresh()->status)->toBe(AnalysisStatus::Unsupported);
 });
 
-it('allows an owner to safely retry only a failed analysis', function () {
+it('allows an owner to safely retry a terminal unsuccessful analysis', function (AnalysisStatus $status) {
     Queue::fake();
     $user = User::factory()->create();
-    $demo = Demo::factory()->for($user)->create(['status' => AnalysisStatus::Failed]);
-    Analysis::factory()->for($demo)->failed()->create(['attempt' => 1]);
+    $demo = Demo::factory()->for($user)->create(['status' => $status]);
+    Analysis::factory()->for($demo)->create(['attempt' => 1, 'status' => $status]);
 
     $this->actingAs($user)
         ->postJson(route('api.demos.analysis.retry', $demo))
@@ -124,4 +124,7 @@ it('allows an owner to safely retry only a failed analysis', function () {
     $this->actingAs(User::factory()->create())
         ->postJson(route('api.demos.analysis.retry', $demo))
         ->assertForbidden();
-});
+})->with([
+    AnalysisStatus::Failed,
+    AnalysisStatus::Unsupported,
+]);

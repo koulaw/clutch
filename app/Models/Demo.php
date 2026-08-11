@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
 
 #[Fillable(['user_id', 'public_id', 'storage_disk', 'storage_path', 'checksum_sha256', 'size_bytes', 'status', 'uploaded_at'])]
@@ -44,6 +45,12 @@ class Demo extends Model
     public function analyses(): HasMany
     {
         return $this->hasMany(Analysis::class);
+    }
+
+    /** @return HasOne<Analysis, $this> */
+    public function latestAnalysis(): HasOne
+    {
+        return $this->hasOne(Analysis::class)->latestOfMany('attempt');
     }
 
     /** @return array<string, string> */

@@ -12,9 +12,13 @@ class MapRadarSeeder extends Seeder
      */
     public function run(): void
     {
-        app(ResolveMapRadar::class)->handle([
-            'map_name' => 'de_mirage',
-            'network_protocol' => 14011,
-        ]);
+        foreach (config('map_radars.maps') as $mapName => $versions) {
+            $definition = $versions[array_key_first($versions)];
+
+            app(ResolveMapRadar::class)->handle([
+                'map_name' => $mapName,
+                'patch_version' => $definition['patch_versions'][0],
+            ]);
+        }
     }
 }

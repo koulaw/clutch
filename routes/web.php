@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\DemoAnalysisController;
 use App\Http\Controllers\DemoUploadController;
 use App\Http\Controllers\LocaleController;
 use Illuminate\Http\Request;
@@ -50,8 +51,14 @@ Route::get('/dashboard', fn (Request $request, ManageUserQuota $quotas): Respons
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
-Route::prefix('api/v1')->middleware(['auth', 'verified', 'throttle:demo-uploads'])->group(function (): void {
-    Route::post('/demos/upload-url', [DemoUploadController::class, 'store'])->name('api.demos.upload.store');
-    Route::post('/demos/{demo}/confirm', [DemoUploadController::class, 'confirm'])->name('api.demos.upload.confirm');
-    Route::post('/demos/{demo}/analysis/retry', [DemoUploadController::class, 'retry'])->name('api.demos.analysis.retry');
+Route::prefix('api/v1')->middleware(['auth', 'verified'])->group(function (): void {
+    Route::get('/analyses', [DemoAnalysisController::class, 'index'])
+        ->middleware('throttle:120,1')
+        ->name('api.analyses.index');
+
+    Route::middleware('throttle:demo-uploads')->group(function (): void {
+        Route::post('/demos/upload-url', [DemoUploadController::class, 'store'])->name('api.demos.upload.store');
+        Route::post('/demos/{demo}/confirm', [DemoUploadController::class, 'confirm'])->name('api.demos.upload.confirm');
+        Route::post('/demos/{demo}/analysis/retry', [DemoUploadController::class, 'retry'])->name('api.demos.analysis.retry');
+    });
 });
