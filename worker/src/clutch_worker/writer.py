@@ -6,6 +6,7 @@ from importlib.metadata import version
 from pathlib import Path
 from typing import Any
 
+from clutch_worker.contract import SCHEMA_VERSION
 from clutch_worker.parser import ParsedDemo
 
 SAFE_DATASET_NAME = re.compile(r"\A[a-zA-Z0-9_-]+\Z")
@@ -35,8 +36,8 @@ class ParsedDemoWriter:
             event_datasets[event_name] = {"path": relative_path, "rows": events.height}
 
         manifest = {
-            "schema_version": "1.0.0",
-            "parser": {"name": "awpy", "version": version("awpy")},
+            "schema_version": SCHEMA_VERSION,
+            "parser_version": version("awpy"),
             "match": {"path": "match.json"},
             "rounds": {"path": "rounds.parquet", "rows": parsed.rounds.height},
             "players": {"path": "players.parquet", "rows": parsed.players.height},

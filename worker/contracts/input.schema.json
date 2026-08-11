@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://clutch.local/contracts/worker/input.schema.json",
+  "title": "Clutch worker input",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "source", "output"],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bucket", "object_key"],
+      "properties": {
+        "bucket": { "type": "string", "minLength": 1 },
+        "object_key": { "type": "string", "minLength": 1 },
+        "checksum_sha256": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["directory"],
+      "properties": {
+        "directory": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

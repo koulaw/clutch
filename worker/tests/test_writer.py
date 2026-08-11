@@ -29,6 +29,7 @@ def test_writes_manifest_and_parquet_datasets(tmp_path: Path) -> None:
     assert pl.read_parquet(tmp_path / "events/player_death.parquet").height == 1
     assert pl.read_parquet(tmp_path / "ticks.parquet").height == 3
     assert not (tmp_path / "unsafe.parquet").exists()
+    assert manifest["parser_version"] == "2.0.2"
     assert manifest["events"] == {
         "player_death": {"path": "events/player_death.parquet", "rows": 1}
     }

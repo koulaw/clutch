@@ -3,9 +3,11 @@
 import argparse
 import json
 import sys
+from importlib.metadata import version
 from pathlib import Path
 from typing import Any
 
+from clutch_worker.contract import SCHEMA_VERSION, require_input, validate_payload
 from clutch_worker.errors import WorkerError
 from clutch_worker.parser import AwpyDemoParser
 from clutch_worker.storage import S3DemoStorage
@@ -29,6 +31,16 @@ def run(arguments: list[str] | None = None, workflow: ParseDemoWorkflow | None =
     active_workflow = workflow or ParseDemoWorkflow(S3DemoStorage(), AwpyDemoParser(), ParsedDemoWriter())
 
     try:
+        input_payload = {
+            "schema_version": SCHEMA_VERSION,
+            "source": {
+                "bucket": options.bucket,
+                "object_key": options.key,
+                "checksum_sha256": options.expected_sha256,
+            },
+            "output": {"directory": str(options.output)},
+        }
+        require_input(input_payload)
         manifest = active_workflow.run(
             bucket=options.bucket,
             key=options.key,
@@ -37,16 +49,27 @@ def run(arguments: list[str] | None = None, workflow: ParseDemoWorkflow | None =
         )
         payload: dict[str, Any] = {
             "ok": True,
+            "schema_version": SCHEMA_VERSION,
+            "parser_version": version("awpy"),
             "output_directory": str(options.output),
             "manifest": manifest,
         }
+        if not validate_payload("output", payload):
+            raise ValueError("The worker output does not match the contract.")
         exit_code = 0
     except WorkerError as error:
-        payload = {"ok": False, "error": error.as_dict()}
+        payload = {
+            "ok": False,
+            "schema_version": SCHEMA_VERSION,
+            "parser_version": version("awpy"),
+            "error": error.as_dict(),
+        }
         exit_code = 2
     except Exception as exception:
         payload = {
             "ok": False,
+            "schema_version": SCHEMA_VERSION,
+            "parser_version": version("awpy"),
             "error": {
                 "code": "internal_error",
                 "message": "The demo worker failed unexpectedly.",

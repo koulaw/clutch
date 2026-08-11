@@ -252,6 +252,8 @@ Le projet isolé dans `worker/` télécharge une démo depuis un stockage compat
 - un fichier Parquet par famille d'événements dans `events/` ;
 - `manifest.json` pour les versions du schéma et du parseur, les chemins et le nombre de lignes produits.
 
+Les schémas d’entrée, de sortie et d’erreur ainsi que les unités et conventions de coordonnées sont décrits dans [`worker/contracts/`](worker/contracts/README.md).
+
 Construire l'image du worker :
 
 ```bash

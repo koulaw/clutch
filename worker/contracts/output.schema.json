@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://clutch.local/contracts/worker/output.schema.json",
+  "title": "Clutch worker success output",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["ok", "schema_version", "parser_version", "output_directory", "manifest"],
+  "properties": {
+    "ok": { "const": true },
+    "schema_version": { "const": "1.0.0" },
+    "parser_version": { "type": "string", "minLength": 1 },
+    "output_directory": { "type": "string", "minLength": 1 },
+    "manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "parser_version", "match", "rounds", "players", "events", "ticks"],
+      "properties": {
+        "schema_version": { "const": "1.0.0" },
+        "parser_version": { "type": "string", "minLength": 1 },
+        "match": { "$ref": "#/$defs/jsonArtifact" },
+        "rounds": { "$ref": "#/$defs/tabularArtifact" },
+        "players": { "$ref": "#/$defs/tabularArtifact" },
+        "events": {
+          "type": "object",
+          "propertyNames": { "pattern": "^[a-zA-Z0-9_-]+$" },
+          "additionalProperties": { "$ref": "#/$defs/tabularArtifact" }
+        },
+        "ticks": { "$ref": "#/$defs/tabularArtifact" }
+      }
+    }
+  },
+  "$defs": {
+    "jsonArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path"],
+      "properties": { "path": { "type": "string", "minLength": 1 } }
+    },
+    "tabularArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "rows"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "rows": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}

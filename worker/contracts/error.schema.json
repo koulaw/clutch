@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://clutch.local/contracts/worker/error.schema.json",
+  "title": "Clutch worker error output",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["ok", "schema_version", "parser_version", "error"],
+  "properties": {
+    "ok": { "const": false },
+    "schema_version": { "const": "1.0.0" },
+    "parser_version": { "type": "string", "minLength": 1 },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message", "retryable", "details"],
+      "properties": {
+        "code": {
+          "enum": ["storage_error", "checksum_mismatch", "unsupported_demo", "corrupt_demo", "invalid_input", "internal_error"]
+        },
+        "message": { "type": "string", "minLength": 1 },
+        "retryable": { "type": "boolean" },
+        "details": { "type": "object" }
+      }
+    }
+  }
+}

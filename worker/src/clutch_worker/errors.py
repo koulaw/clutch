@@ -67,3 +67,13 @@ class StorageError(WorkerError):
             retryable=True,
             details={"exception_type": type(exception).__name__},
         )
+
+
+class InvalidInputError(WorkerError):
+    """The orchestrator supplied a payload outside the supported contract."""
+
+    def __init__(self) -> None:
+        super().__init__(
+            code="invalid_input",
+            message="The worker input does not match schema version 1.0.0.",
+        )

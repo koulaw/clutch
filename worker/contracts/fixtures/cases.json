@@ -1,0 +1,75 @@
+[
+  {
+    "name": "valid input",
+    "kind": "input",
+    "valid": true,
+    "payload": {
+      "schema_version": "1.0.0",
+      "source": { "bucket": "clutch", "object_key": "demos/1/reference.dem", "checksum_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" },
+      "output": { "directory": "/work/output" }
+    }
+  },
+  {
+    "name": "invalid input version",
+    "kind": "input",
+    "valid": false,
+    "payload": {
+      "schema_version": "2.0.0",
+      "source": { "bucket": "clutch", "object_key": "demos/1/reference.dem" },
+      "output": { "directory": "/work/output" }
+    }
+  },
+  {
+    "name": "valid success",
+    "kind": "output",
+    "valid": true,
+    "payload": {
+      "ok": true,
+      "schema_version": "1.0.0",
+      "parser_version": "2.0.2",
+      "output_directory": "/work/output",
+      "manifest": {
+        "schema_version": "1.0.0",
+        "parser_version": "2.0.2",
+        "match": { "path": "match.json" },
+        "rounds": { "path": "rounds.parquet", "rows": 24 },
+        "players": { "path": "players.parquet", "rows": 10 },
+        "events": { "player_death": { "path": "events/player_death.parquet", "rows": 173 } },
+        "ticks": { "path": "ticks.parquet", "rows": 120000 }
+      }
+    }
+  },
+  {
+    "name": "invalid success without parser version",
+    "kind": "output",
+    "valid": false,
+    "payload": {
+      "ok": true,
+      "schema_version": "1.0.0",
+      "output_directory": "/work/output",
+      "manifest": {}
+    }
+  },
+  {
+    "name": "valid error",
+    "kind": "error",
+    "valid": true,
+    "payload": {
+      "ok": false,
+      "schema_version": "1.0.0",
+      "parser_version": "2.0.2",
+      "error": { "code": "corrupt_demo", "message": "The demo is corrupt.", "retryable": false, "details": {} }
+    }
+  },
+  {
+    "name": "invalid unknown error code",
+    "kind": "error",
+    "valid": false,
+    "payload": {
+      "ok": false,
+      "schema_version": "1.0.0",
+      "parser_version": "2.0.2",
+      "error": { "code": "anything", "message": "Unknown.", "retryable": false, "details": {} }
+    }
+  }
+]
