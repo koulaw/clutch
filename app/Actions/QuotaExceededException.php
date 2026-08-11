@@ -2,6 +2,8 @@
 
 namespace App\Actions;
 
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use RuntimeException;
 
 class QuotaExceededException extends RuntimeException
@@ -17,5 +19,19 @@ class QuotaExceededException extends RuntimeException
         };
 
         parent::__construct($message);
+    }
+
+    public function render(Request $request): JsonResponse|false
+    {
+        if (! $request->is('api/*')) {
+            return false;
+        }
+
+        return response()->json([
+            'message' => $this->getMessage(),
+            'code' => 'quota_exceeded',
+            'quota' => $this->quota,
+            'limit' => $this->limit,
+        ], 429);
     }
 }

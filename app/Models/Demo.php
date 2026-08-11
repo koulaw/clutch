@@ -29,6 +29,11 @@ class Demo extends Model
         });
     }
 
+    public function getRouteKeyName(): string
+    {
+        return 'public_id';
+    }
+
     /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
