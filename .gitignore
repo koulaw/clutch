@@ -14,6 +14,10 @@
 /.zed
 /auth.json
 /node_modules
+/worker/.pytest_cache
+/worker/.ruff_cache
+/worker/.venv
+/worker/**/__pycache__
 /public/build
 /public/fonts-manifest.dev.json
 /public/hot

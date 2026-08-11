@@ -6,7 +6,7 @@ Le produit s'inspire de l'expérience de lecture et d'analyse proposée par Skyb
 
 ## État du projet
 
-Le dépôt contient actuellement le socle Laravel de l'application. Les fonctionnalités métier, le frontend React et le moteur d'analyse des démos restent à implémenter.
+Le dépôt contient le socle Laravel de l'application ainsi qu'un premier worker Python capable de parser une démo avec Awpy. Le lecteur et les analyses métier restent à implémenter.
 
 La première bêta sera gratuite, accessible sur invitation et limitée par des quotas afin de contrôler les coûts de traitement et de stockage.
 
@@ -243,6 +243,38 @@ flowchart LR
 - Données du lecteur découpées et compressées par round.
 - Positions du lecteur échantillonnées à 16 images par seconde, puis interpolées dans le navigateur.
 
+## Worker Python Awpy
+
+Le projet isolé dans `worker/` télécharge une démo depuis un stockage compatible S3, vérifie optionnellement son checksum SHA-256, la parse avec Awpy puis écrit un contrat de sortie versionné :
+
+- `match.json` pour les métadonnées du match ;
+- `rounds.parquet`, `players.parquet` et `ticks.parquet` ;
+- un fichier Parquet par famille d'événements dans `events/` ;
+- `manifest.json` pour les versions du schéma et du parseur, les chemins et le nombre de lignes produits.
+
+Construire l'image du worker :
+
+```bash
+docker build --tag clutch-demo-worker:local worker
+```
+
+Pour développer ou tester le worker hors du conteneur, Python 3.12 et [uv](https://docs.astral.sh/uv/) sont requis :
+
+```bash
+cd worker
+uv sync --frozen
+uv run ruff check .
+uv run pytest
+```
+
+Le test utilisant la démo de référence officielle Awpy télécharge un fichier externe et reste donc désactivé par défaut. Pour l'exécuter explicitement :
+
+```bash
+RUN_REFERENCE_DEMO=1 uv run pytest -m reference
+```
+
+Le point d'entrée du conteneur accepte notamment `--bucket`, `--key`, `--output` et, si disponible, `--expected-sha256`. La configuration S3 repose sur les variables AWS habituelles ainsi que `S3_ENDPOINT_URL` pour MinIO. Une exécution réussie retourne le manifeste en JSON ; une erreur retourne un JSON normalisé avec l'un des codes `storage_error`, `checksum_mismatch`, `unsupported_demo`, `corrupt_demo` ou `internal_error`.
+
 ## Pipeline d'une démo
 
 1. Laravel génère une URL temporaire d'upload vers le stockage objet.
@@ -272,7 +304,7 @@ L'import automatique des matchs Premier sera étudié après FACEIT. Il nécessi
 | Méthode | Route | Fonction |
 | --- | --- | --- |
 | `POST` | `/api/v1/demos/upload-url` | Préparer l'envoi direct d'une démo |
-| `POST` | `/api/v1/demos` | Confirmer l'envoi et lancer l'analyse |
+| `POST` | `/api/v1/demos/{demo}/confirm` | Confirmer l'envoi et lancer l'analyse |
 | `GET` | `/api/v1/demos/{demo}` | Obtenir l'état et la progression |
 | `GET` | `/api/v1/demos/{demo}/rounds/{round}/replay` | Charger les données d'un round |
 | `GET` | `/api/v1/demos/{demo}/report` | Consulter statistiques et recommandations |

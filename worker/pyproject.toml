@@ -1,0 +1,38 @@
+[project]
+name = "clutch-demo-worker"
+version = "0.1.0"
+description = "Isolated Clutch worker for parsing Counter-Strike 2 demos"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "awpy==2.0.2",
+    "boto3==1.40.21",
+]
+
+[project.scripts]
+clutch-demo-worker = "clutch_worker.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest==8.4.1",
+    "ruff==0.12.10",
+]
+
+[build-system]
+requires = ["hatchling==1.27.0"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "reference: parses the official Awpy reference demo (requires RUN_REFERENCE_DEMO=1)",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "RUF"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/clutch_worker"]
