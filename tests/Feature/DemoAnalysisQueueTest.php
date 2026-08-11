@@ -3,6 +3,7 @@
 use App\Actions\DemoParserException;
 use App\Actions\QueueDemoAnalysis;
 use App\Actions\RunDemoParser;
+use App\Actions\StoreAnalysisArtifacts;
 use App\AnalysisStatus;
 use App\Jobs\ProcessDemoAnalysis;
 use App\Models\Analysis;
@@ -49,8 +50,11 @@ it('tracks parsing and hands a successful worker result to artifact analysis', f
             'manifest' => [],
         ]);
     });
+    $artifacts = $this->mock(StoreAnalysisArtifacts::class, function (MockInterface $mock): void {
+        $mock->shouldReceive('handle')->once();
+    });
 
-    (new ProcessDemoAnalysis($analysis->id, $analysis->demo_id, $analysis->demo->checksum_sha256))->handle($parser);
+    (new ProcessDemoAnalysis($analysis->id, $analysis->demo_id, $analysis->demo->checksum_sha256))->handle($parser, $artifacts);
 
     expect($analysis->refresh()->status)->toBe(AnalysisStatus::Analyzing)
         ->and($analysis->parser_version)->toBe('0.6.0')
@@ -67,8 +71,9 @@ it('records non-retryable worker failures with actionable context', function () 
         ]);
         $mock->shouldReceive('handle')->once()->andThrow($exception);
     });
+    $artifacts = $this->mock(StoreAnalysisArtifacts::class);
 
-    (new ProcessDemoAnalysis($analysis->id, $analysis->demo_id, $analysis->demo->checksum_sha256))->handle($parser);
+    (new ProcessDemoAnalysis($analysis->id, $analysis->demo_id, $analysis->demo->checksum_sha256))->handle($parser, $artifacts);
 
     $analysis->refresh();
 

@@ -109,9 +109,16 @@ class WorkerContract
         }
 
         $manifest = $payload['manifest'];
-        if (! is_array($manifest) || ! $this->hasExactKeys($manifest, [
-            'schema_version', 'parser_version', 'match', 'rounds', 'players', 'events', 'ticks',
-        ])) {
+        if (! is_array($manifest)) {
+            return false;
+        }
+
+        $manifestKeys = array_keys($manifest);
+        sort($manifestKeys);
+        if (! in_array($manifestKeys, [
+            ['events', 'match', 'parser_version', 'players', 'rounds', 'schema_version', 'ticks'],
+            ['events', 'match', 'parser_version', 'players', 'replays', 'rounds', 'schema_version', 'ticks'],
+        ], true)) {
             return false;
         }
 
@@ -136,6 +143,18 @@ class WorkerContract
         foreach ($manifest['events'] as $name => $artifact) {
             if (! $this->isNonEmptyString($name) || ! $this->validTabularArtifact($artifact)) {
                 return false;
+            }
+        }
+
+        if (isset($manifest['replays'])) {
+            if (! is_array($manifest['replays'])) {
+                return false;
+            }
+
+            foreach ($manifest['replays'] as $replay) {
+                if (! $this->validReplayArtifact($replay)) {
+                    return false;
+                }
             }
         }
 
@@ -177,6 +196,26 @@ class WorkerContract
             && $this->isNonEmptyString($artifact['path'])
             && is_int($artifact['rows'])
             && $artifact['rows'] >= 0;
+    }
+
+    private function validReplayArtifact(mixed $artifact): bool
+    {
+        return is_array($artifact)
+            && $this->hasExactKeys($artifact, [
+                'path', 'round', 'start_tick', 'freeze_end_tick', 'end_tick', 'winner_side',
+                'win_reason', 'frames', 'frames_per_second', 'version',
+            ])
+            && is_string($artifact['path'])
+            && preg_match('/\Areplays\/round-[1-9][0-9]*\.json\.gz\z/', $artifact['path']) === 1
+            && is_int($artifact['round']) && $artifact['round'] > 0
+            && is_int($artifact['start_tick']) && $artifact['start_tick'] >= 0
+            && ($artifact['freeze_end_tick'] === null || is_int($artifact['freeze_end_tick']))
+            && is_int($artifact['end_tick']) && $artifact['end_tick'] >= $artifact['start_tick']
+            && ($artifact['winner_side'] === null || is_string($artifact['winner_side']))
+            && ($artifact['win_reason'] === null || is_string($artifact['win_reason']))
+            && is_int($artifact['frames']) && $artifact['frames'] >= 0
+            && $artifact['frames_per_second'] === 16
+            && $this->isNonEmptyString($artifact['version']);
     }
 
     /**

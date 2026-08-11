@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Actions\DemoParserException;
 use App\Actions\RunDemoParser;
+use App\Actions\StoreAnalysisArtifacts;
 use App\AnalysisStatus;
 use App\Models\Analysis;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -34,7 +35,7 @@ class ProcessDemoAnalysis implements ShouldBeUnique, ShouldQueue
         $this->onQueue((string) config('demo_analysis.queue'));
     }
 
-    public function handle(RunDemoParser $parser): void
+    public function handle(RunDemoParser $parser, StoreAnalysisArtifacts $artifacts): void
     {
         $analysis = Analysis::query()->with('demo')->find($this->analysisId);
 
@@ -51,24 +52,30 @@ class ProcessDemoAnalysis implements ShouldBeUnique, ShouldQueue
 
         try {
             $payload = $parser->handle($analysis);
-        } catch (DemoParserException $exception) {
+            $analysis->update([
+                'status' => AnalysisStatus::Analyzing,
+                'parser_version' => $payload['parser_version'],
+            ]);
+            $analysis->demo->update(['status' => AnalysisStatus::Analyzing]);
+            $artifacts->handle($analysis, $payload);
+        } catch (Throwable $throwable) {
+            $exception = $throwable instanceof DemoParserException
+                ? $throwable
+                : DemoParserException::fromThrowable($throwable);
+
             if (($exception->workerContext['retryable'] ?? true) === false) {
                 $this->recordFailure($exception);
 
                 return;
             }
 
-            $analysis->update(['status' => AnalysisStatus::Queued]);
-            $analysis->demo->update(['status' => AnalysisStatus::Queued]);
+            if ($analysis->refresh()->status !== AnalysisStatus::Ready) {
+                $analysis->update(['status' => AnalysisStatus::Queued]);
+                $analysis->demo->update(['status' => AnalysisStatus::Queued]);
+            }
 
             throw $exception;
         }
-
-        $analysis->update([
-            'status' => AnalysisStatus::Analyzing,
-            'parser_version' => $payload['parser_version'],
-        ]);
-        $analysis->demo->update(['status' => AnalysisStatus::Analyzing]);
     }
 
     public function uniqueId(): string

@@ -35,7 +35,19 @@
         "rounds": { "path": "rounds.parquet", "rows": 24 },
         "players": { "path": "players.parquet", "rows": 10 },
         "events": { "player_death": { "path": "events/player_death.parquet", "rows": 173 } },
-        "ticks": { "path": "ticks.parquet", "rows": 120000 }
+        "ticks": { "path": "ticks.parquet", "rows": 120000 },
+        "replays": [{
+          "path": "replays/round-1.json.gz",
+          "round": 1,
+          "start_tick": 100,
+          "freeze_end_tick": 200,
+          "end_tick": 500,
+          "winner_side": "ct",
+          "win_reason": "t_killed",
+          "frames": 100,
+          "frames_per_second": 16,
+          "version": "1.0.0"
+        }]
       }
     }
   },

@@ -24,4 +24,4 @@ Awpy fournit un repère monde droitier Source 2. Le worker conserve les coordon
 
 ## Sorties et erreurs
 
-Une exécution écrit exactement un objet JSON sur stdout. `ok=true` référence les artefacts produits dans `manifest`. `ok=false` fournit une erreur normalisée ; `retryable` indique si l’orchestrateur peut planifier une nouvelle tentative. Les chemins du manifeste sont relatifs à `output_directory` et utilisent `/` comme séparateur.
+Une exécution écrit exactement un objet JSON sur stdout. `ok=true` référence les artefacts produits dans `manifest`. Les données analytiques complètes restent en Parquet. `manifest.replays` référence un JSON gzip privé par round, échantillonné à 16 images par seconde et versionné indépendamment. `ok=false` fournit une erreur normalisée ; `retryable` indique si l’orchestrateur peut planifier une nouvelle tentative. Les chemins du manifeste sont relatifs à `output_directory` et utilisent `/` comme séparateur.

@@ -22,6 +22,7 @@ class ParsedDemo:
     players: pl.DataFrame
     events: dict[str, pl.DataFrame]
     ticks: pl.DataFrame
+    tick_rate: int
 
 
 class AwpyDemoParser:
@@ -46,6 +47,7 @@ class AwpyDemoParser:
                 players=self._extract_players(ticks),
                 events=dict(demo.events),
                 ticks=ticks,
+                tick_rate=int(demo.tickrate),
             )
         except Exception as exception:
             raise CorruptDemoError(exception) from exception

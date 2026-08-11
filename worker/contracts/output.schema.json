@@ -25,7 +25,11 @@
           "propertyNames": { "pattern": "^[a-zA-Z0-9_-]+$" },
           "additionalProperties": { "$ref": "#/$defs/tabularArtifact" }
         },
-        "ticks": { "$ref": "#/$defs/tabularArtifact" }
+        "ticks": { "$ref": "#/$defs/tabularArtifact" },
+        "replays": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/replayArtifact" }
+        }
       }
     }
   },
@@ -43,6 +47,23 @@
       "properties": {
         "path": { "type": "string", "minLength": 1 },
         "rows": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "replayArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "round", "start_tick", "freeze_end_tick", "end_tick", "winner_side", "win_reason", "frames", "frames_per_second", "version"],
+      "properties": {
+        "path": { "type": "string", "pattern": "^replays/round-[1-9][0-9]*\\.json\\.gz$" },
+        "round": { "type": "integer", "minimum": 1 },
+        "start_tick": { "type": "integer", "minimum": 0 },
+        "freeze_end_tick": { "type": ["integer", "null"], "minimum": 0 },
+        "end_tick": { "type": "integer", "minimum": 0 },
+        "winner_side": { "type": ["string", "null"] },
+        "win_reason": { "type": ["string", "null"] },
+        "frames": { "type": "integer", "minimum": 0 },
+        "frames_per_second": { "const": 16 },
+        "version": { "type": "string", "minLength": 1 }
       }
     }
   }

@@ -24,6 +24,7 @@ class FakeDemo:
             }
         )
         self.events = {"player_death": pl.DataFrame({"tick": [150], "attacker_name": ["Alpha"]})}
+        self.tickrate = 64
 
     def parse(self) -> None:
         """Match Awpy's parsing interface."""
@@ -43,6 +44,7 @@ def test_extracts_match_rounds_players_events_and_ticks(tmp_path: Path) -> None:
     ]
     assert parsed.events["player_death"].height == 1
     assert parsed.ticks.height == 3
+    assert parsed.tick_rate == 64
 
 
 def test_rejects_a_non_cs2_demo_before_awpy_runs(tmp_path: Path) -> None:

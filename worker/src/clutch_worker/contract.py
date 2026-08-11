@@ -64,7 +64,7 @@ def _valid_output(payload: Mapping[str, Any]) -> bool:
 
     manifest = payload.get("manifest")
     manifest_keys = {"schema_version", "parser_version", "match", "rounds", "players", "events", "ticks"}
-    if not isinstance(manifest, Mapping) or set(manifest) != manifest_keys:
+    if not isinstance(manifest, Mapping) or set(manifest) not in (manifest_keys, manifest_keys | {"replays"}):
         return False
     if manifest.get("schema_version") != SCHEMA_VERSION or not _non_empty_string(manifest.get("parser_version")):
         return False
@@ -74,8 +74,14 @@ def _valid_output(payload: Mapping[str, Any]) -> bool:
         return False
 
     events = manifest.get("events")
-    return isinstance(events, Mapping) and all(
+    if not isinstance(events, Mapping) or not all(
         _non_empty_string(name) and _valid_tabular_artifact(artifact) for name, artifact in events.items()
+    ):
+        return False
+
+    replays = manifest.get("replays")
+    return replays is None or (
+        isinstance(replays, list) and all(_valid_replay_artifact(replay) for replay in replays)
     )
 
 
@@ -110,6 +116,27 @@ def _valid_tabular_artifact(value: object) -> bool:
         and isinstance(value.get("rows"), int)
         and not isinstance(value.get("rows"), bool)
         and value["rows"] >= 0
+    )
+
+
+def _valid_replay_artifact(value: object) -> bool:
+    keys = {
+        "path", "round", "start_tick", "freeze_end_tick", "end_tick", "winner_side",
+        "win_reason", "frames", "frames_per_second", "version",
+    }
+    return (
+        isinstance(value, Mapping)
+        and set(value) == keys
+        and _non_empty_string(value.get("path"))
+        and isinstance(value.get("round"), int) and value["round"] > 0
+        and isinstance(value.get("start_tick"), int) and value["start_tick"] >= 0
+        and (value.get("freeze_end_tick") is None or isinstance(value.get("freeze_end_tick"), int))
+        and isinstance(value.get("end_tick"), int) and value["end_tick"] >= value["start_tick"]
+        and (value.get("winner_side") is None or isinstance(value.get("winner_side"), str))
+        and (value.get("win_reason") is None or isinstance(value.get("win_reason"), str))
+        and isinstance(value.get("frames"), int) and value["frames"] >= 0
+        and value.get("frames_per_second") == 16
+        and _non_empty_string(value.get("version"))
     )
 
 
