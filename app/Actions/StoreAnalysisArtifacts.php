@@ -14,7 +14,10 @@ use RuntimeException;
 
 class StoreAnalysisArtifacts
 {
-    public function __construct(private ManageUserQuota $quotas) {}
+    public function __construct(
+        private ManageUserQuota $quotas,
+        private ResolveMapRadar $radars,
+    ) {}
 
     /** @param array<string, mixed> $payload */
     public function handle(Analysis $analysis, array $payload): void
@@ -168,10 +171,12 @@ class StoreAnalysisArtifacts
     {
         $matchPath = $this->localPath(storage_path("app/private/analyses/{$analysis->id}"), $manifest['match']['path']);
         $header = json_decode(File::get($matchPath), true, flags: JSON_THROW_ON_ERROR);
+        $radar = $this->radars->handle($header);
         $replays = $manifest['replays'] ?? [];
         $tickRate = (int) ($header['tick_rate'] ?? 64);
 
         $match = $analysis->gameMatch()->updateOrCreate([], [
+            'map_radar_id' => $radar->id,
             'map_name' => $header['map_name'],
             'tick_rate' => $tickRate,
             'duration_ms' => $this->durationMilliseconds($replays, $tickRate),

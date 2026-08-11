@@ -17,7 +17,11 @@ it('stores versioned analytical and per-round replay artifacts', function () {
     File::ensureDirectoryExists("{$output}/replays");
 
     $files = [
-        'match.json' => json_encode(['map_name' => 'de_mirage', 'tick_rate' => 64], JSON_THROW_ON_ERROR),
+        'match.json' => json_encode([
+            'map_name' => 'de_mirage',
+            'network_protocol' => 14011,
+            'tick_rate' => 64,
+        ], JSON_THROW_ON_ERROR),
         'rounds.parquet' => 'complete rounds parquet',
         'players.parquet' => 'complete players parquet',
         'ticks.parquet' => 'complete ticks parquet',
@@ -67,6 +71,7 @@ it('stores versioned analytical and per-round replay artifacts', function () {
         ->and($analysis->demo->refresh()->status)->toBe(AnalysisStatus::Ready)
         ->and($analysis->artifacts()->count())->toBe(6)
         ->and($analysis->gameMatch->map_name)->toBe('de_mirage')
+        ->and($analysis->gameMatch->mapRadar->version)->toBe('17595823')
         ->and($analysis->gameMatch->rounds()->sole()->number)->toBe(1)
         ->and($replay->gameRound->number)->toBe(1)
         ->and($replay->metadata)->toMatchArray([

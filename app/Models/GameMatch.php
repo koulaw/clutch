@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['analysis_id', 'external_id', 'map_name', 'started_at', 'duration_ms', 'tick_rate', 'team_one_name', 'team_two_name', 'team_one_score', 'team_two_score', 'winner_side', 'metadata'])]
+#[Fillable(['analysis_id', 'map_radar_id', 'external_id', 'map_name', 'started_at', 'duration_ms', 'tick_rate', 'team_one_name', 'team_two_name', 'team_one_score', 'team_two_score', 'winner_side', 'metadata'])]
 class GameMatch extends Model
 {
     /** @use HasFactory<GameMatchFactory> */
@@ -26,6 +26,12 @@ class GameMatch extends Model
     public function analysis(): BelongsTo
     {
         return $this->belongsTo(Analysis::class);
+    }
+
+    /** @return BelongsTo<MapRadar, $this> */
+    public function mapRadar(): BelongsTo
+    {
+        return $this->belongsTo(MapRadar::class);
     }
 
     /** @return HasMany<GameRound, $this> */

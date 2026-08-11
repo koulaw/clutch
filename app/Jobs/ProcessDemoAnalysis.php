@@ -109,14 +109,18 @@ class ProcessDemoAnalysis implements ShouldBeUnique, ShouldQueue
             'queue' => config('demo_analysis.queue'),
         ]);
 
+        $status = $exception->workerCode === 'unsupported_demo'
+            ? AnalysisStatus::Unsupported
+            : AnalysisStatus::Failed;
+
         $analysis->update([
-            'status' => AnalysisStatus::Failed,
+            'status' => $status,
             'failed_at' => now(),
             'error_code' => $exception->workerCode,
             'error_message' => $exception->getMessage(),
             'error_context' => $context,
         ]);
-        $analysis->demo->update(['status' => AnalysisStatus::Failed]);
+        $analysis->demo->update(['status' => $status]);
 
         Log::error('Demo analysis failed.', $context + ['error_code' => $exception->workerCode]);
     }

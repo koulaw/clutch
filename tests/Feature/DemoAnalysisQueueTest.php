@@ -88,6 +88,24 @@ it('records non-retryable worker failures with actionable context', function () 
         ->and($analysis->demo->refresh()->status)->toBe(AnalysisStatus::Failed);
 });
 
+it('marks an unsupported map version without retrying it as a parser failure', function () {
+    $analysis = Analysis::factory()->create(['status' => AnalysisStatus::Queued]);
+    $parser = $this->mock(RunDemoParser::class, function (MockInterface $mock): void {
+        $exception = DemoParserException::fromWorker('unsupported_demo', 'The demo map or game version is not supported.', [
+            'retryable' => false,
+            'details' => ['map_name' => 'de_inferno', 'network_protocol' => 14011],
+        ]);
+        $mock->shouldReceive('handle')->once()->andThrow($exception);
+    });
+    $artifacts = $this->mock(StoreAnalysisArtifacts::class);
+
+    (new ProcessDemoAnalysis($analysis->id, $analysis->demo_id, $analysis->demo->checksum_sha256))->handle($parser, $artifacts);
+
+    expect($analysis->refresh()->status)->toBe(AnalysisStatus::Unsupported)
+        ->and($analysis->error_code)->toBe('unsupported_demo')
+        ->and($analysis->demo->refresh()->status)->toBe(AnalysisStatus::Unsupported);
+});
+
 it('allows an owner to safely retry only a failed analysis', function () {
     Queue::fake();
     $user = User::factory()->create();
