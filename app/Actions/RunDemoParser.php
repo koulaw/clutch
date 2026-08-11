@@ -18,13 +18,14 @@ class RunDemoParser
 
         $outputDirectory = storage_path("app/private/analyses/{$analysis->id}");
         File::ensureDirectoryExists($outputDirectory);
+        $disk = config("filesystems.disks.{$analysis->demo->storage_disk}");
 
         $process = new Process([
             (string) config('demo_analysis.uv_binary'),
             'run',
             '--project',
             base_path('worker'),
-            'clutch-worker',
+            'clutch-demo-worker',
             '--bucket',
             (string) config("filesystems.disks.{$analysis->demo->storage_disk}.bucket"),
             '--key',
@@ -33,7 +34,13 @@ class RunDemoParser
             $outputDirectory,
             '--expected-sha256',
             $analysis->demo->checksum_sha256,
-        ], base_path());
+        ], base_path(), [
+            'AWS_ACCESS_KEY_ID' => (string) $disk['key'],
+            'AWS_SECRET_ACCESS_KEY' => (string) $disk['secret'],
+            'AWS_DEFAULT_REGION' => (string) $disk['region'],
+            'AWS_EC2_METADATA_DISABLED' => 'true',
+            'S3_ENDPOINT_URL' => (string) $disk['endpoint'],
+        ]);
         $process->setTimeout((float) config('demo_analysis.process_timeout'));
 
         try {
@@ -45,7 +52,11 @@ class RunDemoParser
         try {
             $payload = json_decode(trim($process->getOutput()), true, flags: JSON_THROW_ON_ERROR);
         } catch (Throwable $exception) {
-            throw DemoParserException::fromThrowable($exception);
+            throw DemoParserException::fromWorker('invalid_worker_response', 'The demo parser did not return valid JSON.', [
+                'exception' => $exception::class,
+                'exit_code' => $process->getExitCode(),
+                'stderr' => mb_substr(trim($process->getErrorOutput()), 0, 2000),
+            ]);
         }
 
         if (! is_array($payload) || ! app(WorkerContract::class)->validate($payload['ok'] === true ? 'output' : 'error', $payload)) {
