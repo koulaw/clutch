@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\ManageUserQuota;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
@@ -8,6 +9,7 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\LocaleController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -41,6 +43,8 @@ Route::middleware('auth')->group(function (): void {
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 });
 
-Route::get('/dashboard', fn (): Response => Inertia::render('dashboard'))
+Route::get('/dashboard', fn (Request $request, ManageUserQuota $quotas): Response => Inertia::render('dashboard', [
+    'quotas' => $quotas->usage($request->user()),
+]))
     ->middleware(['auth', 'verified'])
     ->name('dashboard');

@@ -124,6 +124,21 @@ Seule une invitation encore disponible peut être révoquée. Une invitation uti
 
 La personne invitée ouvre le lien généré, complète le formulaire avec l'adresse email exacte à laquelle l'invitation a été envoyée, puis crée son compte. L'adresse est normalisée en minuscules. Lors de l'inscription, l'invitation et la création du compte sont validées dans une même transaction ; l'invitation devient immédiatement utilisée et ne peut pas servir une seconde fois.
 
+## Quotas utilisateur
+
+Pendant la bêta, chaque utilisateur dispose par défaut de cinq imports de démos par jour et peut conserver jusqu'à trente analyses. La consommation courante et le nombre d'emplacements restants sont affichés sur le tableau de bord.
+
+Les limites sont configurables dans l'environnement :
+
+```env
+QUOTA_DAILY_IMPORTS=5
+QUOTA_STORED_ANALYSES=30
+```
+
+Le compteur d'imports est remis à zéro automatiquement au changement de jour. Un import accepté consomme une unité avant le début du traitement afin de protéger les coûts de parsing, même si le traitement échoue ensuite. Le compteur d'analyses augmente lorsqu'une analyse est conservée et diminue lorsqu'elle est supprimée, sans jamais devenir négatif.
+
+Les modifications de quota sont réalisées dans une transaction avec verrouillage afin que plusieurs requêtes simultanées ne puissent pas dépasser les limites. Lorsqu'un quota est atteint, l'application lève une `QuotaExceededException` avec un message explicite. Les futurs parcours d'import et d'analyse doivent utiliser `ManageUserQuota::consumeImport()`, `storeAnalysis()` et `releaseAnalysis()` pour maintenir les compteurs à jour.
+
 ## Suivi du développement
 
 - [Projet GitHub — Clutch. MVP](https://github.com/users/koulaw/projects/8)
