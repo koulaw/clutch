@@ -76,6 +76,54 @@ pnpm run build
 docker compose ps
 ```
 
+## Gérer les invitations à la bêta
+
+L'inscription nécessite une invitation valide liée à l'adresse email du futur utilisateur. Les invitations sont administrées avec des commandes Artisan depuis un environnement où l'application et la base de données sont configurées.
+
+### Créer une invitation
+
+```bash
+php artisan invitation:create joueur@example.com
+```
+
+La commande crée une invitation valable pendant sept jours et affiche un lien d'inscription à transmettre à la personne invitée. Le domaine de ce lien dépend de la valeur `APP_URL` de l'environnement.
+
+Pour choisir une autre durée de validité :
+
+```bash
+php artisan invitation:create joueur@example.com --days=30
+```
+
+Utiliser `--days=0` pour une invitation sans date d'expiration :
+
+```bash
+php artisan invitation:create joueur@example.com --days=0
+```
+
+Le lien contient un jeton secret qui n'est affiché qu'à sa création. Seule son empreinte SHA-256 est conservée en base de données ; le lien doit donc être transmis par un canal privé.
+
+### Consulter les invitations
+
+```bash
+php artisan invitation:list
+```
+
+La commande affiche l'identifiant, l'adresse email, la date d'expiration et l'état de chaque invitation : `Available`, `Used`, `Expired` ou `Revoked`.
+
+### Révoquer une invitation
+
+Récupérer son identifiant avec `invitation:list`, puis exécuter :
+
+```bash
+php artisan invitation:revoke 42
+```
+
+Seule une invitation encore disponible peut être révoquée. Une invitation utilisée, expirée ou déjà révoquée reste conservée pour le suivi.
+
+### S'inscrire avec une invitation
+
+La personne invitée ouvre le lien généré, complète le formulaire avec l'adresse email exacte à laquelle l'invitation a été envoyée, puis crée son compte. L'adresse est normalisée en minuscules. Lors de l'inscription, l'invitation et la création du compte sont validées dans une même transaction ; l'invitation devient immédiatement utilisée et ne peut pas servir une seconde fois.
+
 ## Suivi du développement
 
 - [Projet GitHub — Clutch. MVP](https://github.com/users/koulaw/projects/8)
