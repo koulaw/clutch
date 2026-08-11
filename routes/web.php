@@ -53,4 +53,5 @@ Route::get('/dashboard', fn (Request $request, ManageUserQuota $quotas): Respons
 Route::prefix('api/v1')->middleware(['auth', 'verified', 'throttle:demo-uploads'])->group(function (): void {
     Route::post('/demos/upload-url', [DemoUploadController::class, 'store'])->name('api.demos.upload.store');
     Route::post('/demos/{demo}/confirm', [DemoUploadController::class, 'confirm'])->name('api.demos.upload.confirm');
+    Route::post('/demos/{demo}/analysis/retry', [DemoUploadController::class, 'retry'])->name('api.demos.analysis.retry');
 });

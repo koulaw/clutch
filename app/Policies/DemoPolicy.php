@@ -11,4 +11,9 @@ class DemoPolicy
     {
         return $demo->user_id === $user->id;
     }
+
+    public function retryAnalysis(User $user, Demo $demo): bool
+    {
+        return $demo->user_id === $user->id;
+    }
 }

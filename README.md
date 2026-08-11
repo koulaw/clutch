@@ -17,6 +17,7 @@ La première bêta sera gratuite, accessible sur invitation et limitée par des 
 - PHP 8.3 avec l'extension PostgreSQL (`pdo_pgsql`) ;
 - Composer ;
 - Node.js et pnpm 10 ;
+- Python 3.12 et [uv](https://docs.astral.sh/uv/) ;
 - Docker avec Docker Compose.
 
 Docker exécute PostgreSQL, Redis et MinIO. Laravel, le worker de queue et Vite s'exécutent directement sur la machine de développement.
@@ -32,10 +33,13 @@ docker compose up -d --wait postgres redis minio
 docker compose run --rm minio-init
 
 composer run setup
+cd worker && uv sync --frozen && cd ..
 composer run dev
 ```
 
-L'application est ensuite accessible sur [http://localhost:8000](http://localhost:8000). `composer run dev` démarre le serveur Laravel, le worker Redis, les logs applicatifs et Vite dans le même terminal.
+L'application est ensuite accessible sur [http://localhost:8000](http://localhost:8000). `composer run dev` démarre le serveur Laravel, les logs applicatifs, Vite et un worker Redis qui écoute en priorité la queue `demo-analysis`, puis la queue `default`. Lorsqu'un upload est confirmé, ce worker lance le parseur Python installé dans `worker/` via `uv`.
+
+Le parsing dispose de quatre tentatives avec un backoff progressif. Son processus expire par défaut après 900 secondes et le job Laravel après 930 secondes ; `REDIS_QUEUE_RETRY_AFTER` doit donc rester strictement supérieur à 930. La queue, le délai du processus et le binaire peuvent être adaptés dans `.env` avec `DEMO_ANALYSIS_QUEUE`, `DEMO_ANALYSIS_PROCESS_TIMEOUT` et `DEMO_ANALYSIS_UV_BINARY`.
 
 Les services locaux utilisent les adresses suivantes :
 
@@ -307,6 +311,7 @@ L'import automatique des matchs Premier sera étudié après FACEIT. Il nécessi
 | --- | --- | --- |
 | `POST` | `/api/v1/demos/upload-url` | Préparer l'envoi direct d'une démo |
 | `POST` | `/api/v1/demos/{demo}/confirm` | Confirmer l'envoi et lancer l'analyse |
+| `POST` | `/api/v1/demos/{demo}/analysis/retry` | Relancer la dernière analyse en échec |
 | `GET` | `/api/v1/demos/{demo}` | Obtenir l'état et la progression |
 | `GET` | `/api/v1/demos/{demo}/rounds/{round}/replay` | Charger les données d'un round |
 | `GET` | `/api/v1/demos/{demo}/report` | Consulter statistiques et recommandations |

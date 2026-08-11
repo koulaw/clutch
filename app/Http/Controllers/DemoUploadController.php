@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Actions\ConfirmDemoUpload;
+use App\Actions\QueueDemoAnalysis;
 use App\Actions\ReserveDemoUpload;
 use App\Http\Requests\ConfirmDemoUploadRequest;
 use App\Http\Requests\CreateDemoUploadRequest;
 use App\Models\Demo;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Gate;
 
 class DemoUploadController extends Controller
 {
@@ -44,5 +46,21 @@ class DemoUploadController extends Controller
                 'uploaded_at' => $confirmedDemo->uploaded_at?->toIso8601String(),
             ],
         ]);
+    }
+
+    public function retry(Demo $demo, QueueDemoAnalysis $analyses): JsonResponse
+    {
+        Gate::authorize('retryAnalysis', $demo);
+
+        $analysis = $analyses->handle($demo, manualRetry: true);
+
+        return response()->json([
+            'data' => [
+                'demo_id' => $demo->public_id,
+                'analysis_id' => $analysis->id,
+                'attempt' => $analysis->attempt,
+                'status' => $analysis->status->value,
+            ],
+        ], 202);
     }
 }

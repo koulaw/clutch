@@ -5,6 +5,7 @@ use App\Models\Demo;
 use App\Models\User;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -12,6 +13,7 @@ uses(LazilyRefreshDatabase::class);
 
 beforeEach(function () {
     Cache::flush();
+    Queue::fake();
     config()->set('demo_upload.disk', 's3');
     config()->set('demo_upload.rate_limit_per_minute', 100);
     Storage::fake('s3');
@@ -189,7 +191,7 @@ it('confirms a valid CS2 demo and consumes one daily import', function () {
     $this->actingAs($user)
         ->postJson(route('api.demos.upload.confirm', $demo))
         ->assertSuccessful()
-        ->assertJsonPath('data.status', 'uploaded');
+        ->assertJsonPath('data.status', 'queued');
 
     expect($demo->fresh()->uploaded_at)->not->toBeNull()
         ->and(app(ManageUserQuota::class)->usage($user)['imports']['used'])->toBe(1);
@@ -209,7 +211,7 @@ it('confirms a zstandard-compressed demo', function () {
     $this->actingAs($user)
         ->postJson(route('api.demos.upload.confirm', $demo))
         ->assertSuccessful()
-        ->assertJsonPath('data.status', 'uploaded');
+        ->assertJsonPath('data.status', 'queued');
 
     expect($demo->fresh()->uploaded_at)->not->toBeNull();
 });

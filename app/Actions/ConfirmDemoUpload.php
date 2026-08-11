@@ -10,17 +10,20 @@ class ConfirmDemoUpload
     public function __construct(
         private ValidateDemoUpload $validator,
         private ManageUserQuota $quotas,
+        private QueueDemoAnalysis $analyses,
     ) {}
 
     public function handle(Demo $demo): Demo
     {
         if ($demo->uploaded_at !== null) {
-            return $demo;
+            $this->analyses->handle($demo);
+
+            return $demo->refresh();
         }
 
         $this->validator->handle($demo);
 
-        return DB::transaction(function () use ($demo): Demo {
+        $confirmedDemo = DB::transaction(function () use ($demo): Demo {
             $lockedDemo = Demo::query()->whereKey($demo)->lockForUpdate()->firstOrFail();
 
             if ($lockedDemo->uploaded_at !== null) {
@@ -32,5 +35,9 @@ class ConfirmDemoUpload
 
             return $lockedDemo;
         });
+
+        $this->analyses->handle($confirmedDemo);
+
+        return $confirmedDemo->refresh();
     }
 }
